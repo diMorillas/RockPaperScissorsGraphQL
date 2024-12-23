@@ -2,6 +2,7 @@ const express = require('express');
 const { graphqlHTTP } = require('express-graphql');
 const { buildSchema } = require('graphql');
 
+// Crea una instancia de la aplicación Express
 const app = express();
 
 // Clase Partida para 2 jugadores
@@ -11,7 +12,7 @@ class Partida {
         this.jugadores = []; // Jugadores
         this.movimientos = {}; // Movimientos de los jugadores
         this.estado = 'esperando'; // esperando que ambos jugadores jueguen
-        this.ganador = null; // Ganador de la partida
+        this.puntos = { jugador1: 0, jugador2: 0 }; // Puntos de los jugadores
     }
 
     agregarJugador(jugador) {
@@ -42,15 +43,23 @@ class Partida {
 
         // Lógica de piedra, papel o tijera
         if (movimiento1 === movimiento2) {
-            this.ganador = 'empate';
+            // Empate
+            return;
         } else if (
             (movimiento1 === 'piedra' && movimiento2 === 'tijera') ||
             (movimiento1 === 'papel' && movimiento2 === 'piedra') ||
             (movimiento1 === 'tijera' && movimiento2 === 'papel')
         ) {
-            this.ganador = jugador1;
+            // Jugador 1 gana
+            this.puntos.jugador1 += 1;
         } else {
-            this.ganador = jugador2;
+            // Jugador 2 gana
+            this.puntos.jugador2 += 1;
+        }
+
+        // Revisar si un jugador llega a 3 puntos
+        if (this.puntos.jugador1 === 3 || this.puntos.jugador2 === 3) {
+            this.estado = 'finalizada'; // Finaliza la partida si un jugador llega a 3 puntos
         }
     }
 
@@ -58,8 +67,7 @@ class Partida {
         return {
             estado: this.estado,
             jugadores: this.jugadores,
-            movimientos: this.movimientos,
-            ganador: this.ganador
+            puntos: this.puntos
         };
     }
 }
@@ -73,8 +81,13 @@ type Partida {
     codiPartida: ID!
     estado: String
     jugadores: [String]
-    movimientos: [String]
+    puntos: Puntos
     ganador: String
+}
+
+type Puntos {
+    jugador1: Int
+    jugador2: Int
 }
 
 type Query {
@@ -89,19 +102,40 @@ type Mutation {
 }
 `);
 
+// Resolver para consultas y mutaciones
 const arrel = {
+    
+    /*
     consultarEstado: ({ codiPartida }) => {
-        if (partidas[codiPartida]) {
-            return partidas[codiPartida].consultarEstado();
+      // Verificar si la partida existe en el objeto de partidas
+      const partida = partidas[codiPartida];
+      if (partida) {
+        // Llamar al método consultarEstado de la clase Partida para obtener los detalles
+        return partida.consultarEstado();
+      } else {
+        throw new Error('Partida no encontrada');
+      }
+    },*/
+
+    consultarEstado: ({ codiPartida }) => {
+        const partida = partidas[codiPartida];
+        if (partida) {
+            return {
+                codiPartida: partida.codiPartida,
+                estado: partida.estado
+            };
         }
         throw new Error('Partida no encontrada');
     },
+
     iniciarPartida: ({ codiPartida }) => {
         if (!partidas[codiPartida]) {
             partidas[codiPartida] = new Partida(codiPartida);
         }
         return partidas[codiPartida];
     },
+
+
     agregarJugador: ({ codiPartida, jugador }) => {
         if (partidas[codiPartida]) {
             const partida = partidas[codiPartida];
@@ -113,6 +147,8 @@ const arrel = {
         }
         throw new Error('Partida no encontrada');
     },
+
+
     hacerMovimiento: ({ codiPartida, jugador, movimiento }) => {
         if (partidas[codiPartida]) {
             const partida = partidas[codiPartida];
@@ -121,6 +157,8 @@ const arrel = {
         }
         throw new Error('Partida no encontrada');
     },
+
+
     acabarPartida: ({ codiPartida }) => {
         if (partidas[codiPartida]) {
             delete partidas[codiPartida];

@@ -28,7 +28,7 @@ mutation {
  puntos {
  jugador1
  jugador2
- }
+  }
  }
 }
 ```
@@ -44,7 +44,7 @@ mutation {
  puntos {
  jugador1
  jugador2
- }
+  }
  }
 }
 ```
@@ -58,7 +58,7 @@ mutation {
  puntos {
  jugador1
  jugador2
- }
+  }
  }
 }
 
@@ -75,7 +75,7 @@ mutation {
  puntos {
  jugador1
  jugador2
- }
+  }
  }
 }
 ```
@@ -89,7 +89,7 @@ mutation {
  puntos {
  jugador1
  jugador2
- }
+  }
  }
 }
 ```

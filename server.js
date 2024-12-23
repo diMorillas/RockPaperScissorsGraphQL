@@ -13,6 +13,7 @@ class Partida {
         this.movimientos = {}; // Movimientos de los jugadores
         this.estado = 'esperando'; // esperando que ambos jugadores jueguen
         this.puntos = { jugador1: 0, jugador2: 0 }; // Puntos de los jugadores
+        this.ganador = null; // Ganador de la partida
     }
 
     agregarJugador(jugador) {
@@ -28,7 +29,7 @@ class Partida {
             throw new Error('El jugador ya hizo su movimiento');
         }
         this.movimientos[jugador] = movimiento;
-        
+
         // Si ambos jugadores han hecho su movimiento, determinar el ganador
         if (Object.keys(this.movimientos).length === 2) {
             this.estado = 'jugando';
@@ -44,7 +45,7 @@ class Partida {
         // Lógica de piedra, papel o tijera
         if (movimiento1 === movimiento2) {
             // Empate
-            return;
+            this.ganador = null;
         } else if (
             (movimiento1 === 'piedra' && movimiento2 === 'tijera') ||
             (movimiento1 === 'papel' && movimiento2 === 'piedra') ||
@@ -52,9 +53,11 @@ class Partida {
         ) {
             // Jugador 1 gana
             this.puntos.jugador1 += 1;
+            this.ganador = this.jugadores[0]; // Jugador 1
         } else {
             // Jugador 2 gana
             this.puntos.jugador2 += 1;
+            this.ganador = this.jugadores[1]; // Jugador 2
         }
 
         // Revisar si un jugador llega a 3 puntos
@@ -65,9 +68,11 @@ class Partida {
 
     consultarEstado() {
         return {
+            codiPartida: this.codiPartida,
             estado: this.estado,
             jugadores: this.jugadores,
-            puntos: this.puntos
+            puntos: this.puntos,
+            ganador: this.ganador
         };
     }
 }
@@ -104,26 +109,11 @@ type Mutation {
 
 // Resolver para consultas y mutaciones
 const arrel = {
-    
-    /*
-    consultarEstado: ({ codiPartida }) => {
-      // Verificar si la partida existe en el objeto de partidas
-      const partida = partidas[codiPartida];
-      if (partida) {
-        // Llamar al método consultarEstado de la clase Partida para obtener los detalles
-        return partida.consultarEstado();
-      } else {
-        throw new Error('Partida no encontrada');
-      }
-    },*/
 
     consultarEstado: ({ codiPartida }) => {
         const partida = partidas[codiPartida];
         if (partida) {
-            return {
-                codiPartida: partida.codiPartida,
-                estado: partida.estado
-            };
+            return partida.consultarEstado();
         }
         throw new Error('Partida no encontrada');
     },
@@ -134,7 +124,6 @@ const arrel = {
         }
         return partidas[codiPartida];
     },
-
 
     agregarJugador: ({ codiPartida, jugador }) => {
         if (partidas[codiPartida]) {
@@ -148,16 +137,14 @@ const arrel = {
         throw new Error('Partida no encontrada');
     },
 
-
     hacerMovimiento: ({ codiPartida, jugador, movimiento }) => {
         if (partidas[codiPartida]) {
             const partida = partidas[codiPartida];
             partida.hacerMovimiento(jugador, movimiento);
-            return partida;
+            return partida.consultarEstado(); // Devuelves el estado actualizado
         }
         throw new Error('Partida no encontrada');
     },
-
 
     acabarPartida: ({ codiPartida }) => {
         if (partidas[codiPartida]) {

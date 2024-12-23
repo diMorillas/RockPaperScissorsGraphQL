@@ -5,6 +5,7 @@ function iniciarPartida() {
     const codiPartida = document.getElementById("codiPartida").value;
     const jugador1 = document.getElementById("jugador1").value;
     const jugador2 = document.getElementById("jugador2").value;
+    document.getElementById('spookyMusic').play()
 
     // Validación de campos obligatorios
     if (!codiPartida || !jugador1 || !jugador2) {

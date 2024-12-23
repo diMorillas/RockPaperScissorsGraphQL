@@ -24,53 +24,19 @@ class Partida {
         return false;
     }
 
-    // Función para hacer el primer movimiento y determinar el primer punto
-    hacerMovimiento1(jugador, movimiento) {
+    // Función para hacer un movimiento y determinar el punto correspondiente
+    hacerMovimiento(jugador, movimiento, ronda) {
         if (this.movimientos[jugador]) {
             throw new Error('El jugador ya hizo su movimiento en esta ronda');
         }
         this.movimientos[jugador] = movimiento;
 
-        // Si ambos jugadores han hecho su primer movimiento
+        // Si ambos jugadores han hecho su movimiento
         if (Object.keys(this.movimientos).length === 2) {
             this.estado = 'jugando';
-            this.determinarPunto(1);
+            this.determinarPunto(ronda);
 
             // Limpiar los movimientos para la siguiente ronda
-            this.movimientos = {};
-        }
-    }
-
-    // Función para hacer el segundo movimiento y determinar el segundo punto
-    hacerMovimiento2(jugador, movimiento) {
-        if (this.movimientos[jugador]) {
-            throw new Error('El jugador ya hizo su movimiento en esta ronda');
-        }
-        this.movimientos[jugador] = movimiento;
-
-        // Si ambos jugadores han hecho su segundo movimiento
-        if (Object.keys(this.movimientos).length === 2) {
-            this.estado = 'jugando';
-            this.determinarPunto(2);
-
-            // Limpiar los movimientos para la siguiente ronda
-            this.movimientos = {};
-        }
-    }
-
-    // Función para hacer el tercer movimiento y determinar el tercer punto
-    hacerMovimiento3(jugador, movimiento) {
-        if (this.movimientos[jugador]) {
-            throw new Error('El jugador ya hizo su movimiento en esta ronda');
-        }
-        this.movimientos[jugador] = movimiento;
-
-        // Si ambos jugadores han hecho su tercer movimiento
-        if (Object.keys(this.movimientos).length === 2) {
-            this.estado = 'finalizada';
-            this.determinarPunto(3);
-
-            // Limpiar los movimientos ya que la partida se ha finalizado
             this.movimientos = {};
         }
     }
@@ -90,27 +56,19 @@ class Partida {
             (movimiento1 === 'tijera' && movimiento2 === 'papel')
         ) {
             // Jugador 1 gana la ronda
-            if (ronda === 1) {
-                this.puntos.jugador1 += 1;
-            } else if (ronda === 2) {
-                this.puntos.jugador1 += 1;
-            } else {
-                this.puntos.jugador1 += 1;
-            }
+            this.puntos.jugador1 += 1;
         } else {
             // Jugador 2 gana la ronda
-            if (ronda === 1) {
-                this.puntos.jugador2 += 1;
-            } else if (ronda === 2) {
-                this.puntos.jugador2 += 1;
-            } else {
-                this.puntos.jugador2 += 1;
-            }
+            this.puntos.jugador2 += 1;
         }
 
-        // Revisar si un jugador llega a 2 puntos (gana la partida)
-        if (this.puntos.jugador1 === 2 || this.puntos.jugador2 === 2) {
-            this.estado = 'finalizada'; // Finaliza la partida si un jugador llega a 2 puntos
+        // Revisar si un jugador llega a 3 puntos (gana la partida)
+        if (this.puntos.jugador1 === 3) {
+            this.estado = 'finalizada';
+            this.ganador = jugador1;
+        } else if (this.puntos.jugador2 === 3) {
+            this.estado = 'finalizada';
+            this.ganador = jugador2;
         }
     }
 
@@ -150,9 +108,7 @@ type Query {
 type Mutation {
     iniciarPartida(codiPartida: ID!): Partida
     agregarJugador(codiPartida: ID!, jugador: String): Partida
-    hacerMovimiento1(codiPartida: ID!, jugador: String, movimiento: String): Partida
-    hacerMovimiento2(codiPartida: ID!, jugador: String, movimiento: String): Partida
-    hacerMovimiento3(codiPartida: ID!, jugador: String, movimiento: String): Partida
+    hacerMovimiento(codiPartida: ID!, jugador: String, movimiento: String, ronda: Int): Partida
     acabarPartida(codiPartida: ID!): String
 }
 `);
@@ -192,10 +148,10 @@ const arrel = {
         throw new Error('Partida no encontrada');
     },
 
-    hacerMovimiento1: ({ codiPartida, jugador, movimiento }) => {
+    hacerMovimiento: ({ codiPartida, jugador, movimiento, ronda }) => {
         if (partidas[codiPartida]) {
             const partida = partidas[codiPartida];
-            partida.hacerMovimiento1(jugador, movimiento);
+            partida.hacerMovimiento(jugador, movimiento, ronda);
             return partida;
         }
         throw new Error('Partida no encontrada');

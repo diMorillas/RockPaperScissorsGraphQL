@@ -6,21 +6,30 @@
     <title>Juego Piedra-Papel-Tijera</title>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rock+Salt&display=swap" rel="stylesheet">
 </head>
 <body>
-    <h1>Juego Piedra-Papel-Tijera</h1>
+    <audio id="spookyMusic" loop>
+        <source src="./music/music-background.mp3" type="audio/mp3">
+        Tu navegador no soporta el elemento de audio.
+    </audio>
+    
+    
+    <h1>The Ultimate Rock Paper Scissors</h1>
 
     <div id="formulario">
-        <label for="codiPartida">Código de la partida:</label>
-        <input type="text" id="codiPartida" placeholder="Código de la partida" required/>
+        <label for="codiPartida">ID of the game:</label>
+        <input type="text" id="codiPartida" placeholder="ID" required/>
         
-        <label for="jugador1">Jugador 1:</label>
-        <input type="text" id="jugador1" placeholder="Nombre del Jugador 1" required/>
+        <label for="jugador1">First Loser:</label>
+        <input type="text" id="jugador1" placeholder="C'mon, don't be shy..." required/>
 
-        <label for="jugador2">Jugador 2:</label>
-        <input type="text" id="jugador2" placeholder="Nombre del Jugador 2" required/>
+        <label for="jugador2">Second Loser:</label>
+        <input type="text" id="jugador2" placeholder="C'mon, don't be shy..." required/>
 
-        <button onclick="iniciarPartida()">Empezar Partida</button>
+        <button onclick="iniciarPartida()" >Start</button>
     </div>
 
     <div id="movimiento" style="display: none;">
@@ -39,11 +48,10 @@
         <button onclick="hacerMovimiento()">Hacer Movimiento</button>
     </div>
 
-    <div id="estadoPartida"></div>
+    <div id="estadoPartida" style="background-color: #1C2427;">No game status...</div>
     <!-- Botón para eliminar la partida -->
     <button id="eliminarPartidaBtn" onclick="eliminarPartida()">Eliminar Partida</button>
-
-
+    
     <script src="main.js"></script>
 </body>
 </html>

@@ -5,6 +5,7 @@ function iniciarPartida() {
     const codiPartida = document.getElementById("codiPartida").value;
     const jugador1 = document.getElementById("jugador1").value;
     const jugador2 = document.getElementById("jugador2").value;
+    document.getElementById('spookyMusic').play()
 
     // Validación de campos obligatorios
     if (!codiPartida || !jugador1 || !jugador2) {
@@ -22,7 +23,7 @@ function iniciarPartida() {
             }
         }
     `;
-    
+
     axios.post(apiUrl, { query })
         .then(response => {
             console.log(response.data);
@@ -106,18 +107,22 @@ function mostrarEstado(codiPartida) {
             }
         }
     `;
-    
+
     axios.post(apiUrl, { query })
         .then(response => {
             const estado = response.data.data.consultarEstado;
             const estadoDiv = document.getElementById("estadoPartida");
             estadoDiv.innerHTML = `
-                <p><strong>Código de la partida:</strong> ${estado.codiPartida}</p>
-                <p><strong>Estado:</strong> ${estado.estado}</p>
-                <p><strong>Jugadores:</strong> ${estado.jugadores.join(", ")}</p>
-                <p><strong>Puntos:</strong> Jugador 1: ${estado.puntos.jugador1}, Jugador 2: ${estado.puntos.jugador2}</p>
-                <p><strong>Ronda:</strong> ${estado.ronda}</p>
-                ${estado.ganador ? `<p><strong>Ganador:</strong> ${estado.ganador}</p>` : ''}
+            <div style="opacity: 0.7;">
+                <p style="color: #C21035;"><strong>Código de la partida:</strong> ${estado.codiPartida}</p>
+                <p style="color: #C21035;"><strong>Estado:</strong> ${estado.estado}</p>
+                <p style="color: #C21035;"><strong>Jugadores:</strong> ${estado.jugadores.join(", ")}</p>
+                <p style="color: #C21035;"><strong>Puntos:</strong> Jugador 1: ${estado.puntos.jugador1}, Jugador 2: ${estado.puntos.jugador2}</p>
+                <p style="color: #C21035;"><strong>Ronda:</strong> ${estado.ronda}</p>
+                ${estado.ganador ? `<p style="color: #C21035;"><strong>Ganador:</strong> ${estado.ganador}</p>` : ''}
+            </div>
+
+
             `;
             mostrarSelectJugador(estado.jugadores);
         })

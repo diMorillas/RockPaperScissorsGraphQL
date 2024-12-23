@@ -23,6 +23,22 @@
         <button onclick="iniciarPartida()">Empezar Partida</button>
     </div>
 
+    <div id="movimiento" style="display: none;">
+        <label for="jugadorSeleccionado">Jugador que tira:</label>
+        <select id="jugadorSeleccionado" required>
+            <option value="" disabled selected>Seleccionar jugador</option>
+        </select>
+
+        <label for="movimientoJugador">Movimiento:</label>
+        <select id="movimientoJugador" required>
+            <option value="" disabled selected>Elige un movimiento</option>
+            <option value="piedra">Piedra</option>
+            <option value="papel">Papel</option>
+            <option value="tijera">Tijera</option>
+        </select>
+        <button onclick="hacerMovimiento()">Hacer Movimiento</button>
+    </div>
+
     <div id="estadoPartida"></div>
 
     <script src="main.js"></script>

@@ -25,7 +25,6 @@ function iniciarPartida() {
     
     axios.post(apiUrl, { query })
         .then(response => {
-            // Mostrar la respuesta del servidor
             console.log(response.data);
             agregarJugador(codiPartida, jugador1);
             agregarJugador(codiPartida, jugador2);
@@ -50,6 +49,44 @@ function agregarJugador(codiPartida, jugador) {
             mostrarEstado(codiPartida); // Mostrar estado después de agregar el jugador
         })
         .catch(error => console.error("Error al agregar jugador:", error));
+}
+
+// Función para hacer el movimiento
+function hacerMovimiento() {
+    const codiPartida = document.getElementById("codiPartida").value;
+    const jugador = document.getElementById("jugadorSeleccionado").value; // Tomamos el jugador seleccionado
+    const movimiento = document.getElementById("movimientoJugador").value;
+
+    // Validación de que el movimiento esté seleccionado
+    if (!movimiento) {
+        alert("Por favor, elige un movimiento.");
+        return;
+    }
+
+    // Enviar la mutación de hacer el movimiento al servidor
+    const query = `
+        mutation {
+            hacerMovimiento(codiPartida: "${codiPartida}", jugador: "${jugador}", movimiento: "${movimiento}") {
+                codiPartida
+                estado
+                jugadores
+                puntos {
+                    jugador1
+                    jugador2
+                }
+                ganador
+                ronda
+            }
+        }
+    `;
+
+    axios.post(apiUrl, { query })
+        .then(response => {
+            console.log(response.data);
+            mostrarEstado(codiPartida); // Mostrar estado después de hacer el movimiento
+            alternarJugador(codiPartida); // Alternar jugador después del movimiento
+        })
+        .catch(error => console.error("Error al hacer el movimiento:", error));
 }
 
 // Función para consultar el estado de la partida
@@ -82,6 +119,49 @@ function mostrarEstado(codiPartida) {
                 <p><strong>Ronda:</strong> ${estado.ronda}</p>
                 ${estado.ganador ? `<p><strong>Ganador:</strong> ${estado.ganador}</p>` : ''}
             `;
+            mostrarSelectJugador(estado.jugadores);
         })
         .catch(error => console.error("Error al consultar estado:", error));
+}
+
+// Mostrar el select para elegir qué jugador tira
+function mostrarSelectJugador(jugadores) {
+    const selectJugador = document.getElementById("jugadorSeleccionado");
+    selectJugador.innerHTML = ""; // Limpiar opciones previas
+
+    jugadores.forEach(jugador => {
+        const option = document.createElement("option");
+        option.value = jugador;
+        option.textContent = jugador;
+        selectJugador.appendChild(option);
+    });
+
+    // Bloquear el select del jugador
+    selectJugador.disabled = false; // Habilitar el select del jugador para que se pueda cambiar entre rondas
+    document.getElementById("movimiento").style.display = "block"; // Mostrar el formulario de movimiento
+}
+
+// Alternar entre jugadores después de cada movimiento
+function alternarJugador(codiPartida) {
+    const selectJugador = document.getElementById("jugadorSeleccionado");
+    const jugadores = Array.from(selectJugador.options).map(option => option.value);
+
+    // Enviar la consulta para obtener el estado actualizado y alternar al siguiente jugador
+    const query = `
+        query {
+            consultarEstado(codiPartida: "${codiPartida}") {
+                jugadores
+            }
+        }
+    `;
+    
+    axios.post(apiUrl, { query })
+        .then(response => {
+            const estado = response.data.data.consultarEstado;
+            const nextPlayer = estado.jugadores.find(jugador => jugador !== selectJugador.value);
+
+            // Actualizar el select para que el siguiente jugador sea el que le toque
+            selectJugador.value = nextPlayer;
+        })
+        .catch(error => console.error("Error al alternar jugador:", error));
 }

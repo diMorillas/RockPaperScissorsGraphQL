@@ -3,39 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Piedra, Papel, Tijera - Juego</title>
-    <link rel="stylesheet" href="/css/styles.css">
-    <script src="https://unpkg.com/@apollo/client@3.6.9"></script>
+    <title>Juego Piedra-Papel-Tijera</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Piedra, Papel, Tijera - Juego</h1>
+    <h1>Juego Piedra-Papel-Tijera</h1>
 
-        <h2>Iniciar Partida</h2>
-        <input type="text" id="codiPartida" placeholder="Código de partida">
-        <button id="iniciarJocBtn">Iniciar Juego</button>
+    <div id="formulario">
+        <label for="codiPartida">Código de la partida:</label>
+        <input type="text" id="codiPartida" placeholder="Código de la partida" required/>
+        
+        <label for="jugador1">Jugador 1:</label>
+        <input type="text" id="jugador1" placeholder="Nombre del Jugador 1" required/>
 
-        <h2>Agregar Jugadores</h2>
-        <input type="text" id="jugador1" placeholder="Jugador 1">
-        <input type="text" id="jugador2" placeholder="Jugador 2">
-        <button id="agregarJugadorBtn">Agregar Jugadores</button>
+        <label for="jugador2">Jugador 2:</label>
+        <input type="text" id="jugador2" placeholder="Nombre del Jugador 2" required/>
 
-        <h2>Hacer Movimiento</h2>
-        <select id="movimiento">
-            <option value="piedra">Piedra</option>
-            <option value="papel">Papel</option>
-            <option value="tijera">Tijera</option>
-        </select>
-        <button id="hacerMovimientoBtn">Hacer Movimiento</button>
-
-        <h2>Estado de la Partida</h2>
-        <button id="consultarEstadoBtn">Consultar Estado</button>
-        <div id="estadoPartida"></div>
-
-        <h2>Resultado Final</h2>
-        <button id="acabarJocBtn">Acabar Juego</button>
+        <button onclick="iniciarPartida()">Empezar Partida</button>
     </div>
 
-    <script src="script.js"></script>
+    <div id="estadoPartida"></div>
+
+    <script src="main.js"></script>
 </body>
 </html>

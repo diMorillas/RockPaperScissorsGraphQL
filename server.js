@@ -1,14 +1,18 @@
-/**
- * Juego Piedra-Papel-Tijera - Versión 1.0.0
- * Autores: Didac Morillas y Pau Morillas
- */
-
+// Asegúrate de añadir esto al principio de tu archivo server.js
 const express = require('express');
 const { graphqlHTTP } = require('express-graphql');
 const { buildSchema } = require('graphql');
 
 // Crea una instancia de la aplicación Express
 const app = express();
+
+// Servir archivos estáticos desde la carpeta 'public'
+app.use(express.static('public'));
+
+/**
+ * Juego Piedra-Papel-Tijera - Versión 1.0.0
+ * Autores: Didac Morillas y Pau Morillas
+ */
 
 /**
  * Clase Partida para 2 jugadores.

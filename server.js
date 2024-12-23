@@ -1,3 +1,20 @@
+/**
+ * @fileoverview
+ * Juego de Piedra, Papel o Tijera implementado con GraphQL.
+ * Este servidor permite iniciar partidas, agregar jugadores, hacer movimientos
+ * y consultar el estado de una partida, todo gestionado a través de GraphQL.
+ * 
+ * @version 1.0.0
+ * @author Didac Morillas, Pau Morillas
+ * 
+ * El juego consiste en dos jugadores que eligen entre piedra, papel o tijera,
+ * donde:
+ * - Piedra gana a Tijera.
+ * - Tijera gana a Papel.
+ * - Papel gana a Piedra.
+ * El primer jugador que llegue a 3 puntos gana la partida.
+ */
+
 const express = require('express');
 const { graphqlHTTP } = require('express-graphql');
 const { buildSchema } = require('graphql');
@@ -5,8 +22,15 @@ const { buildSchema } = require('graphql');
 // Crea una instancia de la aplicación Express
 const app = express();
 
-// Clase Partida para 2 jugadores
+/**
+ * Clase Partida para 2 jugadores.
+ * Representa el estado y las acciones de una partida de Piedra, Papel o Tijera.
+ */
 class Partida {
+    /**
+     * Crea una nueva partida.
+     * @param {string} codiPartida Código único de la partida.
+     */
     constructor(codiPartida) {
         this.codiPartida = codiPartida;
         this.jugadores = []; // Jugadores
@@ -16,6 +40,11 @@ class Partida {
         this.ganador = null; // Ganador de la partida
     }
 
+    /**
+     * Agrega un jugador a la partida.
+     * @param {string} jugador Nombre del jugador.
+     * @returns {boolean} True si el jugador fue agregado correctamente, false si ya hay 2 jugadores.
+     */
     agregarJugador(jugador) {
         if (this.jugadores.length < 2) {
             this.jugadores.push(jugador);
@@ -24,7 +53,13 @@ class Partida {
         return false;
     }
 
-    // Función para hacer un movimiento y determinar el punto correspondiente
+    /**
+     * Realiza un movimiento y determina el punto correspondiente.
+     * @param {string} jugador Nombre del jugador.
+     * @param {string} movimiento Movimiento del jugador ('piedra', 'papel', 'tijera').
+     * @param {number} ronda Número de ronda (1, 2 o 3).
+     * @throws {Error} Si el jugador ya hizo su movimiento en esta ronda.
+     */
     hacerMovimiento(jugador, movimiento, ronda) {
         if (this.movimientos[jugador]) {
             throw new Error('El jugador ya hizo su movimiento en esta ronda');
@@ -41,7 +76,10 @@ class Partida {
         }
     }
 
-    // Función para determinar el ganador de cada ronda y actualizar los puntos
+    /**
+     * Determina el ganador de la ronda y actualiza los puntos.
+     * @param {number} ronda Número de la ronda (1, 2 o 3).
+     */
     determinarPunto(ronda) {
         const [jugador1, jugador2] = this.jugadores;
         const movimiento1 = this.movimientos[jugador1];
@@ -72,6 +110,10 @@ class Partida {
         }
     }
 
+    /**
+     * Consulta el estado de la partida.
+     * @returns {Object} Estado actual de la partida, incluyendo código, estado, jugadores, puntos y ganador.
+     */
     consultarEstado() {
         return {
             codiPartida: this.codiPartida,
@@ -86,7 +128,9 @@ class Partida {
 // Almacenamos las partidas activas
 const partidas = {};
 
-// Esquema GraphQL
+/**
+ * Esquema GraphQL para las consultas y mutaciones.
+ */
 const esquema = buildSchema(`
 type Partida {
     codiPartida: ID!
@@ -113,8 +157,16 @@ type Mutation {
 }
 `);
 
-// Resolver para consultas y mutaciones
+/**
+ * Resolvers para las consultas y mutaciones.
+ */
 const arrel = {
+    /**
+     * Consulta el estado de una partida.
+     * @param {Object} args Argumentos de la consulta.
+     * @param {string} args.codiPartida Código de la partida.
+     * @returns {Object} El estado de la partida.
+     */
     consultarEstado: ({ codiPartida }) => {
         const partida = partidas[codiPartida];
         if (partida) {
@@ -129,6 +181,12 @@ const arrel = {
         throw new Error('Partida no encontrada');
     },
 
+    /**
+     * Inicia una nueva partida.
+     * @param {Object} args Argumentos de la mutación.
+     * @param {string} args.codiPartida Código de la nueva partida.
+     * @returns {Object} La nueva partida creada.
+     */
     iniciarPartida: ({ codiPartida }) => {
         if (!partidas[codiPartida]) {
             partidas[codiPartida] = new Partida(codiPartida);
@@ -136,6 +194,14 @@ const arrel = {
         return partidas[codiPartida];
     },
 
+    /**
+     * Agrega un jugador a una partida.
+     * @param {Object} args Argumentos de la mutación.
+     * @param {string} args.codiPartida Código de la partida.
+     * @param {string} args.jugador Nombre del jugador.
+     * @returns {Object} La partida con el jugador agregado.
+     * @throws {Error} Si la partida ya tiene 2 jugadores.
+     */
     agregarJugador: ({ codiPartida, jugador }) => {
         if (partidas[codiPartida]) {
             const partida = partidas[codiPartida];
@@ -148,6 +214,16 @@ const arrel = {
         throw new Error('Partida no encontrada');
     },
 
+    /**
+     * Realiza un movimiento en una partida.
+     * @param {Object} args Argumentos de la mutación.
+     * @param {string} args.codiPartida Código de la partida.
+     * @param {string} args.jugador Nombre del jugador.
+     * @param {string} args.movimiento Movimiento del jugador ('piedra', 'papel', 'tijera').
+     * @param {number} args.ronda Número de ronda (1, 2 o 3).
+     * @returns {Object} La partida después de realizar el movimiento.
+     * @throws {Error} Si la partida no existe.
+     */
     hacerMovimiento: ({ codiPartida, jugador, movimiento, ronda }) => {
         if (partidas[codiPartida]) {
             const partida = partidas[codiPartida];
@@ -157,6 +233,13 @@ const arrel = {
         throw new Error('Partida no encontrada');
     },
 
+    /**
+     * Elimina una partida.
+     * @param {Object} args Argumentos de la mutación.
+     * @param {string} args.codiPartida Código de la partida a eliminar.
+     * @returns {string} Mensaje de éxito.
+     * @throws {Error} Si la partida no existe.
+     */
     acabarPartida: ({ codiPartida }) => {
         if (partidas[codiPartida]) {
             delete partidas[codiPartida];

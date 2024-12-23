@@ -24,20 +24,59 @@ class Partida {
         return false;
     }
 
-    hacerMovimiento(jugador, movimiento) {
+    // Función para hacer el primer movimiento y determinar el primer punto
+    hacerMovimiento1(jugador, movimiento) {
         if (this.movimientos[jugador]) {
-            throw new Error('El jugador ya hizo su movimiento');
+            throw new Error('El jugador ya hizo su movimiento en esta ronda');
         }
         this.movimientos[jugador] = movimiento;
 
-        // Si ambos jugadores han hecho su movimiento, determinar el ganador
+        // Si ambos jugadores han hecho su primer movimiento
         if (Object.keys(this.movimientos).length === 2) {
             this.estado = 'jugando';
-            this.determinarGanador();
+            this.determinarPunto(1);
+
+            // Limpiar los movimientos para la siguiente ronda
+            this.movimientos = {};
         }
     }
 
-    determinarGanador() {
+    // Función para hacer el segundo movimiento y determinar el segundo punto
+    hacerMovimiento2(jugador, movimiento) {
+        if (this.movimientos[jugador]) {
+            throw new Error('El jugador ya hizo su movimiento en esta ronda');
+        }
+        this.movimientos[jugador] = movimiento;
+
+        // Si ambos jugadores han hecho su segundo movimiento
+        if (Object.keys(this.movimientos).length === 2) {
+            this.estado = 'jugando';
+            this.determinarPunto(2);
+
+            // Limpiar los movimientos para la siguiente ronda
+            this.movimientos = {};
+        }
+    }
+
+    // Función para hacer el tercer movimiento y determinar el tercer punto
+    hacerMovimiento3(jugador, movimiento) {
+        if (this.movimientos[jugador]) {
+            throw new Error('El jugador ya hizo su movimiento en esta ronda');
+        }
+        this.movimientos[jugador] = movimiento;
+
+        // Si ambos jugadores han hecho su tercer movimiento
+        if (Object.keys(this.movimientos).length === 2) {
+            this.estado = 'finalizada';
+            this.determinarPunto(3);
+
+            // Limpiar los movimientos ya que la partida se ha finalizado
+            this.movimientos = {};
+        }
+    }
+
+    // Función para determinar el ganador de cada ronda y actualizar los puntos
+    determinarPunto(ronda) {
         const [jugador1, jugador2] = this.jugadores;
         const movimiento1 = this.movimientos[jugador1];
         const movimiento2 = this.movimientos[jugador2];
@@ -45,24 +84,33 @@ class Partida {
         // Lógica de piedra, papel o tijera
         if (movimiento1 === movimiento2) {
             // Empate
-            this.ganador = null;
         } else if (
             (movimiento1 === 'piedra' && movimiento2 === 'tijera') ||
             (movimiento1 === 'papel' && movimiento2 === 'piedra') ||
             (movimiento1 === 'tijera' && movimiento2 === 'papel')
         ) {
-            // Jugador 1 gana
-            this.puntos.jugador1 += 1;
-            this.ganador = this.jugadores[0]; // Jugador 1
+            // Jugador 1 gana la ronda
+            if (ronda === 1) {
+                this.puntos.jugador1 += 1;
+            } else if (ronda === 2) {
+                this.puntos.jugador1 += 1;
+            } else {
+                this.puntos.jugador1 += 1;
+            }
         } else {
-            // Jugador 2 gana
-            this.puntos.jugador2 += 1;
-            this.ganador = this.jugadores[1]; // Jugador 2
+            // Jugador 2 gana la ronda
+            if (ronda === 1) {
+                this.puntos.jugador2 += 1;
+            } else if (ronda === 2) {
+                this.puntos.jugador2 += 1;
+            } else {
+                this.puntos.jugador2 += 1;
+            }
         }
 
-        // Revisar si un jugador llega a 3 puntos
-        if (this.puntos.jugador1 === 3 || this.puntos.jugador2 === 3) {
-            this.estado = 'finalizada'; // Finaliza la partida si un jugador llega a 3 puntos
+        // Revisar si un jugador llega a 2 puntos (gana la partida)
+        if (this.puntos.jugador1 === 2 || this.puntos.jugador2 === 2) {
+            this.estado = 'finalizada'; // Finaliza la partida si un jugador llega a 2 puntos
         }
     }
 
@@ -102,18 +150,25 @@ type Query {
 type Mutation {
     iniciarPartida(codiPartida: ID!): Partida
     agregarJugador(codiPartida: ID!, jugador: String): Partida
-    hacerMovimiento(codiPartida: ID!, jugador: String, movimiento: String): Partida
+    hacerMovimiento1(codiPartida: ID!, jugador: String, movimiento: String): Partida
+    hacerMovimiento2(codiPartida: ID!, jugador: String, movimiento: String): Partida
+    hacerMovimiento3(codiPartida: ID!, jugador: String, movimiento: String): Partida
     acabarPartida(codiPartida: ID!): String
 }
 `);
 
 // Resolver para consultas y mutaciones
 const arrel = {
-
     consultarEstado: ({ codiPartida }) => {
         const partida = partidas[codiPartida];
         if (partida) {
-            return partida.consultarEstado();
+            return {
+                codiPartida: partida.codiPartida,
+                estado: partida.estado,
+                jugadores: partida.jugadores,
+                puntos: partida.puntos,
+                ganador: partida.ganador
+            };
         }
         throw new Error('Partida no encontrada');
     },
@@ -137,11 +192,11 @@ const arrel = {
         throw new Error('Partida no encontrada');
     },
 
-    hacerMovimiento: ({ codiPartida, jugador, movimiento }) => {
+    hacerMovimiento1: ({ codiPartida, jugador, movimiento }) => {
         if (partidas[codiPartida]) {
             const partida = partidas[codiPartida];
-            partida.hacerMovimiento(jugador, movimiento);
-            return partida.consultarEstado(); // Devuelves el estado actualizado
+            partida.hacerMovimiento1(jugador, movimiento);
+            return partida;
         }
         throw new Error('Partida no encontrada');
     },
@@ -159,7 +214,7 @@ const arrel = {
 app.use('/graphql', graphqlHTTP({
     schema: esquema,
     rootValue: arrel,
-    graphiql: true, 
+    graphiql: true,
 }));
 
 // Iniciar el servidor

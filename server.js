@@ -21,7 +21,7 @@ class Partida {
         this.estado = 'esperando'; // esperando que ambos jugadores jueguen
         this.puntos = { jugador1: 0, jugador2: 0 }; // Puntos de los jugadores
         this.ganador = null; // Ganador de la partida
-        this.ronda = 1; // Inicia en la ronda 1
+        this.ronda = 1; // Rondas
     }
 
     /**
@@ -44,9 +44,14 @@ class Partida {
      * @throws {Error} Si el jugador ya hizo su movimiento en esta ronda.
      */
     hacerMovimiento(jugador, movimiento) {
+        if (this.estado === 'finalizada') {
+            throw new Error('La partida ha terminado. No se pueden hacer más movimientos.');
+        }
+
         if (this.movimientos[jugador]) {
             throw new Error('El jugador ya hizo su movimiento en esta ronda');
         }
+
         this.movimientos[jugador] = movimiento;
 
         // Si ambos jugadores han hecho su movimiento
@@ -56,11 +61,6 @@ class Partida {
 
             // Limpiar los movimientos para la siguiente ronda
             this.movimientos = {};
-
-            // Incrementar la ronda si no se ha ganado
-            if (this.puntos.jugador1 <= 3 && this.puntos.jugador2 <= 3) {
-                this.ronda += 1;
-            }
         }
     }
 
@@ -86,13 +86,21 @@ class Partida {
         }
 
         // Revisar si un jugador llega a 3 puntos (gana la partida)
-        if (this.puntos.jugador1 === 3) {
+        if (this.puntos.jugador1 >= 3 || this.puntos.jugador2 >= 3) {
             this.estado = 'finalizada';
-            this.ganador = this.jugadores[0];
-        } else if (this.puntos.jugador2 === 3) {
-            this.estado = 'finalizada';
-            this.ganador = this.jugadores[1];
+            this.ganador = this.puntos.jugador1 >= 3 ? this.jugadores[0] : this.jugadores[1];
+            this.mensajeFinPartida();
+        } else {
+            // Incrementar la ronda si la partida no ha terminado
+            this.ronda += 1;
         }
+    }
+
+    /**
+     * Muestra el mensaje de fin de partida.
+     */
+    mensajeFinPartida() {
+        console.log("¡Fin de la partida! El juego ha terminado.");
     }
 
     /**
@@ -106,7 +114,7 @@ class Partida {
             jugadores: this.jugadores,
             puntos: this.puntos,
             ganador: this.ganador,
-            ronda: this.ronda // Añadir el número de ronda al estado
+            ronda: this.ronda
         };
     }
 }
@@ -160,14 +168,14 @@ const arrel = {
         if (!partidas[codiPartida]) {
             partidas[codiPartida] = new Partida(codiPartida);
         }
-        return partidas[codiPartida].consultarEstado();
+        return partidas[codiPartida];
     },
 
     agregarJugador: ({ codiPartida, jugador }) => {
         if (partidas[codiPartida]) {
             const partida = partidas[codiPartida];
             if (partida.agregarJugador(jugador)) {
-                return partida.consultarEstado();
+                return partida;
             } else {
                 throw new Error('La partida ya tiene 2 jugadores');
             }
@@ -179,7 +187,7 @@ const arrel = {
         if (partidas[codiPartida]) {
             const partida = partidas[codiPartida];
             partida.hacerMovimiento(jugador, movimiento);
-            return partida.consultarEstado();
+            return partida;
         }
         throw new Error('Partida no encontrada');
     },

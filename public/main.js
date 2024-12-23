@@ -136,7 +136,7 @@ function mostrarSelectJugador(jugadores) {
         selectJugador.appendChild(option);
     });
 
-    // Bloquear el select del jugador
+    // Bloquear el select del jugador (para evitar cambios de jugador manuales)
     selectJugador.disabled = false; // Habilitar el select del jugador para que se pueda cambiar entre rondas
     document.getElementById("movimiento").style.display = "block"; // Mostrar el formulario de movimiento
 }
@@ -154,7 +154,7 @@ function alternarJugador(codiPartida) {
             }
         }
     `;
-    
+
     axios.post(apiUrl, { query })
         .then(response => {
             const estado = response.data.data.consultarEstado;
@@ -164,4 +164,44 @@ function alternarJugador(codiPartida) {
             selectJugador.value = nextPlayer;
         })
         .catch(error => console.error("Error al alternar jugador:", error));
+}
+
+// Función para eliminar la partida
+function eliminarPartida() {
+    const codiPartida = document.getElementById("codiPartida").value;
+
+    // Validación de que el código de partida esté presente
+    if (!codiPartida) {
+        alert("Por favor, ingresa el código de la partida.");
+        return;
+    }
+
+    // Enviar la mutación para eliminar la partida
+    const query = `
+        mutation {
+            acabarPartida(codiPartida: "${codiPartida}")
+        }
+    `;
+
+    axios.post(apiUrl, { query })
+        .then(response => {
+            console.log(response.data);
+            alert("La partida ha sido eliminada.");
+            // Limpiar el estado de la partida
+            limpiarEstado();
+        })
+        .catch(error => console.error("Error al eliminar la partida:", error));
+}
+
+// Función para limpiar el estado de la partida en la interfaz
+function limpiarEstado() {
+    // Limpiar los campos y ocultar el formulario de movimiento
+    document.getElementById("codiPartida").value = '';
+    document.getElementById("jugador1").value = '';
+    document.getElementById("jugador2").value = '';
+    document.getElementById("jugadorSeleccionado").innerHTML = '';
+    document.getElementById("movimientoJugador").value = '';
+    document.getElementById("estadoPartida").innerHTML = '';
+    document.getElementById("movimiento").style.display = "none"; // Ocultar formulario de movimiento
+    document.getElementById("eliminarPartidaBtn").style.display = "none"; // Ocultar botón de eliminar
 }

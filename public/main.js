@@ -5,7 +5,7 @@ function iniciarPartida() {
     const codiPartida = document.getElementById("codiPartida").value;
     const jugador1 = document.getElementById("jugador1").value;
     const jugador2 = document.getElementById("jugador2").value;
-    document.getElementById('spookyMusic').play()
+    _/*document.getElementById('spookyMusic').play()*/
 
     // Validación de campos obligatorios
     if (!codiPartida || !jugador1 || !jugador2) {
@@ -85,10 +85,15 @@ function hacerMovimiento() {
         .then(response => {
             console.log(response.data);
             mostrarEstado(codiPartida); // Mostrar estado después de hacer el movimiento
+
+            // Mostrar un alert cuando el jugador haya hecho su movimiento
+            alert(`${jugador} ha realizado el movimiento: ${movimiento}`);
+
             alternarJugador(codiPartida); // Alternar jugador después del movimiento
         })
         .catch(error => console.error("Error al hacer el movimiento:", error));
 }
+
 
 // Función para consultar el estado de la partida
 function mostrarEstado(codiPartida) {
@@ -116,13 +121,12 @@ function mostrarEstado(codiPartida) {
             <div style="opacity: 0.7;">
                 <p style="color: #C21035;"><strong>Código de la partida:</strong> ${estado.codiPartida}</p>
                 <p style="color: #C21035;"><strong>Estado:</strong> ${estado.estado}</p>
-                <p style="color: #C21035;"><strong>Jugadores:</strong> ${estado.jugadores.join(", ")}</p>
-                <p style="color: #C21035;"><strong>Puntos:</strong> Jugador 1: ${estado.puntos.jugador1}, Jugador 2: ${estado.puntos.jugador2}</p>
-                <p style="color: #C21035;"><strong>Ronda:</strong> ${estado.ronda}</p>
-                ${estado.ganador ? `<p style="color: #C21035;"><strong>Ganador:</strong> ${estado.ganador}</p>` : ''}
+                <p style="color: #C21035;"><strong>Jugadores:</strong><br> ${estado.jugadores.join(" and ")}</p>
+                <hr>
+                <p style="color: #C21035;font-size: 24px;"><strong>Round:</strong> ${estado.ronda}</p>
+                <p style="color: #C21035;"> ${estado.jugadores[0]}: ${estado.puntos.jugador1}<br> ${estado.jugadores[1]}: ${estado.puntos.jugador2}</p>
+                ${estado.ganador ? `<p style="color: #C21035;"><strong>Winner:</strong> ${estado.ganador}</p>` : ''}
             </div>
-
-
             `;
             mostrarSelectJugador(estado.jugadores);
         })
@@ -141,34 +145,9 @@ function mostrarSelectJugador(jugadores) {
         selectJugador.appendChild(option);
     });
 
-    // Bloquear el select del jugador (para evitar cambios de jugador manuales)
-    selectJugador.disabled = false; // Habilitar el select del jugador para que se pueda cambiar entre rondas
+    // Habilitar el select del jugador para que se pueda cambiar entre rondas
+    selectJugador.disabled = false;
     document.getElementById("movimiento").style.display = "block"; // Mostrar el formulario de movimiento
-}
-
-// Alternar entre jugadores después de cada movimiento
-function alternarJugador(codiPartida) {
-    const selectJugador = document.getElementById("jugadorSeleccionado");
-    const jugadores = Array.from(selectJugador.options).map(option => option.value);
-
-    // Enviar la consulta para obtener el estado actualizado y alternar al siguiente jugador
-    const query = `
-        query {
-            consultarEstado(codiPartida: "${codiPartida}") {
-                jugadores
-            }
-        }
-    `;
-
-    axios.post(apiUrl, { query })
-        .then(response => {
-            const estado = response.data.data.consultarEstado;
-            const nextPlayer = estado.jugadores.find(jugador => jugador !== selectJugador.value);
-
-            // Actualizar el select para que el siguiente jugador sea el que le toque
-            selectJugador.value = nextPlayer;
-        })
-        .catch(error => console.error("Error al alternar jugador:", error));
 }
 
 // Función para eliminar la partida
@@ -210,3 +189,32 @@ function limpiarEstado() {
     document.getElementById("movimiento").style.display = "none"; // Ocultar formulario de movimiento
     document.getElementById("eliminarPartidaBtn").style.display = "none"; // Ocultar botón de eliminar
 }
+
+// Actualizar el estado cada 5 segundos
+setInterval(() => {
+    const codiPartida = document.getElementById("codiPartida").value;
+    if (codiPartida) {
+        const query = `
+            query {
+                consultarEstado(codiPartida: "${codiPartida}") {
+                    codiPartida
+                    estado
+                    jugadores
+                    puntos {
+                        jugador1
+                        jugador2
+                    }
+                    ganador
+                    ronda
+                }
+            }
+        `;
+        
+        axios.post(apiUrl, { query })
+            .then(response => {
+                const estado = response.data.data.consultarEstado;
+                mostrarEstado(codiPartida); // Actualizar el estado
+            })
+            .catch(error => console.error("Error al consultar estado:", error));
+    }
+}, 2000);

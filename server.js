@@ -1,3 +1,8 @@
+/**
+ * Juego Piedra-Papel-Tijera - Versión 1.0.0
+ * Autores: Didac Morillas y Pau Morillas
+ */
+
 const express = require('express');
 const { graphqlHTTP } = require('express-graphql');
 const { buildSchema } = require('graphql');

@@ -5,7 +5,6 @@ function iniciarPartida() {
     const codiPartida = document.getElementById("codiPartida").value;
     const jugador1 = document.getElementById("jugador1").value;
     const jugador2 = document.getElementById("jugador2").value;
-    /*document.getElementById('spookyMusic').play()*/
 
     // Validación de campos obligatorios
     if (!codiPartida || !jugador1 || !jugador2) {
@@ -93,7 +92,6 @@ function hacerMovimiento() {
         })
         .catch(error => console.error("Error al hacer el movimiento:", error));
 }
-
 
 // Función para consultar el estado de la partida
 function mostrarEstado(codiPartida) {
@@ -189,31 +187,43 @@ function limpiarEstado() {
     document.getElementById("eliminarPartidaBtn").style.display = "none"; // Ocultar botón de eliminar
 }
 
-// Actualizar el estado cada 5 segundos
+// Función para manejar el contador y la actualización del estado
+let tiempoRestante = 5;  // Tiempo en segundos
 setInterval(() => {
-    const codiPartida = document.getElementById("codiPartida").value;
-    if (codiPartida) {
-        const query = `
-            query {
-                consultarEstado(codiPartida: "${codiPartida}") {
-                    codiPartida
-                    estado
-                    jugadores
-                    puntos {
-                        jugador1
-                        jugador2
+    // Actualizar el contador visual
+    document.getElementById("contador").innerText = `Tiempo restante: ${tiempoRestante}s`;
+
+    // Reducir el tiempo restante
+    tiempoRestante--;
+
+    // Si llega a 0, reiniciar el contador y consultar el estado
+    if (tiempoRestante < 0) {
+        tiempoRestante = 5;
+
+        const codiPartida = document.getElementById("codiPartida").value;
+        if (codiPartida) {
+            const query = `
+                query {
+                    consultarEstado(codiPartida: "${codiPartida}") {
+                        codiPartida
+                        estado
+                        jugadores
+                        puntos {
+                            jugador1
+                            jugador2
+                        }
+                        ganador
+                        ronda
                     }
-                    ganador
-                    ronda
                 }
-            }
-        `;
+            `;
         
-        axios.post(apiUrl, { query })
-            .then(response => {
-                const estado = response.data.data.consultarEstado;
-                mostrarEstado(codiPartida); // Actualizar el estado
-            })
-            .catch(error => console.error("Error al consultar estado:", error));
+            axios.post(apiUrl, { query })
+                .then(response => {
+                    const estado = response.data.data.consultarEstado;
+                    mostrarEstado(codiPartida); // Actualizar el estado
+                })
+                .catch(error => console.error("Error al consultar estado:", error));
+        }
     }
-}, 5000);
+}, 1000);  // Actualizar cada segundo

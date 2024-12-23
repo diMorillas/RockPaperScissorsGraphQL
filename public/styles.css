@@ -150,3 +150,28 @@ button:hover {
         margin: 0;
     }
 }
+
+.container-contador {
+    position: relative;
+    padding: 5px 10px;
+    border-radius: 5px;
+    overflow: hidden; 
+}
+
+.container-contador::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #333;
+    filter: blur(2px);
+    z-index: -1; 
+}
+
+#contador {
+    font-size: 20px;
+    color: #C21035;
+    position: relative;
+}

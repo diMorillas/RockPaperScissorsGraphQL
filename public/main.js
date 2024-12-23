@@ -5,7 +5,7 @@ function iniciarPartida() {
     const codiPartida = document.getElementById("codiPartida").value;
     const jugador1 = document.getElementById("jugador1").value;
     const jugador2 = document.getElementById("jugador2").value;
-    _/*document.getElementById('spookyMusic').play()*/
+    /*document.getElementById('spookyMusic').play()*/
 
     // Validación de campos obligatorios
     if (!codiPartida || !jugador1 || !jugador2) {
@@ -146,7 +146,6 @@ function mostrarSelectJugador(jugadores) {
     });
 
     // Habilitar el select del jugador para que se pueda cambiar entre rondas
-    selectJugador.disabled = false;
     document.getElementById("movimiento").style.display = "block"; // Mostrar el formulario de movimiento
 }
 
@@ -217,4 +216,4 @@ setInterval(() => {
             })
             .catch(error => console.error("Error al consultar estado:", error));
     }
-}, 2000);
+}, 5000);
